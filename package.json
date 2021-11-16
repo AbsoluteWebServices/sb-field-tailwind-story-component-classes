@@ -1,0 +1,40 @@
+{
+  "name": "@absolute-web/sb-field-tailwind-story-component-classes",
+  "description": "A Storyblok Field-Type Plugin Project",
+  "version": "0.0.1",
+  "author": {
+    "name": "Dmytro Kozachok",
+    "email": "dmitry.kozachek@gmail.com"
+  },
+  "scripts": {
+    "dev": "npm run serve",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@unocss/core": "^0.7.4",
+    "@unocss/preset-uno": "^0.7.4",
+    "lodash-es": "^4.17.21",
+    "storyblok-design-system": "^1.0.0-alpha.1",
+    "vue": "^2.5.2"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.2.0",
+    "@vue/cli-plugin-eslint": "^3.2.0",
+    "@vue/cli-service": "^3.2.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.8.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "sass": "^1.43.4",
+    "sass-loader": "10.1.1",
+    "style-loader": "^3.3.1",
+    "style-resources-loader": "^1.4.1",
+    "vue-template-compiler": "^2.5.21"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
