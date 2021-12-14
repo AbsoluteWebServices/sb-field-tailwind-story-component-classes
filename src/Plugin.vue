@@ -15,7 +15,7 @@
 
 <script>
 import { createGenerator } from '@unocss/core'
-import presetUno from '@unocss/preset-uno/dist/index.js'
+import presetWind from '@unocss/preset-wind'
 import debounce from 'lodash-es/debounce'
 import TextField from 'storyblok-design-system/src/components/TextField'
 
@@ -30,6 +30,7 @@ const union = (setA, setB) => {
 const blocksBlacklist = ['BreakpointValue', 'BreakpointBoolean', 'ProductsQuery']
 
 export default {
+  name: 'TailwindStoryComponentClassesPlugin',
   mixins: [window.Storyblok.plugin],
   components: {
     TextField
@@ -76,11 +77,15 @@ export default {
         fetch(this.options.themeUrl)
           .then(res => res.json())
           .then(theme => {
-            this.uno = createGenerator({ presets: [presetUno()], theme })
+            if (theme.screens) {
+              theme.breakpoints = theme.screens
+              delete theme.screens
+            }
+            this.uno = createGenerator({ presets: [presetWind()], theme })
             this.generateStyles()
           })
       } else {
-        this.uno = createGenerator({ presets: [presetUno()] })
+        this.uno = createGenerator({ presets: [presetWind()] })
         this.generateStyles()
       }
     },
@@ -89,7 +94,7 @@ export default {
 
       if (item && typeof item === 'object') {
         if (item.component && !item.component.startsWith('_') && !blocksBlacklist.includes(item.component)) {
-          tokens.add(item.component)
+          tokens.add(`sb-${item.component}`)
         }
 
         for (const key in item) {
@@ -114,40 +119,24 @@ export default {
     crawlStory () {
       this.blocksSet = this.crawlRecursive(this.storyItem.content)
     },
-    async generateStylesForComponent (component) {
-      let css = ''
-      if (this.uno && this.model.classes && this.model.classes[component]) {
-        const result = await this.uno.generate(new Set(this.model.classes[component].split(' ')))
-        css = result.css
-        if (css) {
-          css = css.replace(/\/\*.*\*\/\n/gm, '')
-          css = css.replace(/^\..*{/gm, '{')
-          css = css.replace(/}\n{/gm, '')
-          css = `.story-${this.storyId} .sb-${component}${css}`
-        }
-      }
-      return css
-    },
     async generateStyles () {
-      if (this.model.classes && typeof this.model.classes === 'object') {
-        for (const key in this.model.classes) {
-          if (Object.hasOwnProperty.call(this.model.classes, key)) {
-            this.$set(this.styles, key, await this.generateStylesForComponent(key))
-          }
-        }
-        this.setCss()
+      let css = ''
+      if (this.uno && this.model.classes && typeof this.model.classes === 'object') {
+        this.uno.setConfig({
+          ...this.uno.config,
+          shortcuts: this.model.classes
+        })
+        const result = await this.uno.generate(new Set(Object.keys(this.model.classes)), { scope: `.story-${this.storyId}` })
+        css = result.css
       }
-    },
-    setCss () {
-      this.model.css = Object.values(this.styles).filter(value => value).join('\n')
+      this.model.css = css
     },
     onInput: debounce(async function (name, value) {
       if (typeof this.model.classes !== 'object') {
         this.model.classes = {}
       }
       this.$set(this.model.classes, name, value)
-      this.$set(this.styles, name, await this.generateStylesForComponent(name))
-      this.setCss()
+      await this.generateStyles()
     }, 500),
   },
   computed: {
